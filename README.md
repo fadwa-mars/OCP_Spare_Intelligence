@@ -556,12 +556,6 @@ ocp-spare-intelligence/
 │   ├── main.py                      # Point d'entrée FastAPI
 │   └── requirements.txt
 │
-├── 📂 Livrables/                    # Documentation fournie
-│   ├── Guide_Installation.pdf
-│   ├── Guide_Utilisateur.pdf
-│   ├── API_Documentation.postman_collection.json
-│   ├── Rapport_de_Stage.pdf
-│   └── Presentation_PowerPoint.pptx
 │
 │
 └── 📄 README.md
