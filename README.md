@@ -205,7 +205,6 @@ Utilisateur (Browser)
 | Composer | Gestionnaire de dépendances PHP |
 | NPM / Vite | Gestionnaire de dépendances JS + bundler |
 | pip | Gestionnaire de dépendances Python |
-| n8n *(optionnel)* | Automatisation des workflows |
 | Postman | Documentation et test des API |
 
 ---
