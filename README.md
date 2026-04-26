@@ -23,25 +23,6 @@
 
 ---
 
-## 📋 Table des matières
-
-1. [📌 Aperçu du projet](#-aperçu-du-projet)
-2. [✨ Fonctionnalités détaillées](#-fonctionnalités-détaillées)
-3. [🏗️ Architecture](#️-architecture)
-4. [🛠️ Technologies utilisées](#️-technologies-utilisées)
-5. [📦 Installation](#-installation)
-6. [🚀 Démarrage](#-démarrage)
-7. [📡 Documentation API](#-documentation-api)
-8. [🤖 Service IA](#-service-ia)
-9. [📁 Structure du projet](#-structure-du-projet)
-10. [👥 Rôles et permissions](#-rôles-et-permissions)
-11. [🖼️ Captures d'écran](#️-captures-décran)
-12. [👤 Auteurs](#-auteurs)
-13. [📄 Licence](#-licence)
-14. [🙏 Remerciements](#-remerciements)
-
----
-
 ## 📌 Aperçu du projet
 
 **OCP Spare Intelligence** est une solution full-stack de gestion intelligente des pièces de rechange, conçue spécialement pour répondre aux besoins opérationnels de l'**OCP Group** (Office Chérifien des Phosphates).
@@ -158,11 +139,6 @@ Ce système intègre trois couches technologiques complémentaires :
                     │  commandes │ fournisseurs │ offres   │
                     └──────────────────────────────────────┘
 
-                    ┌──────────────────────────────────────┐
-                    │     AUTOMATISATION (Optionnel)        │
-                    │              n8n                      │
-                    │  Workflows automatisés & notifications│
-                    └──────────────────────────────────────┘
 ```
 
 ### 🔄 Flux de données typique
@@ -588,8 +564,6 @@ ocp-spare-intelligence/
 │   ├── Rapport_de_Stage.pdf
 │   └── Presentation_PowerPoint.pptx
 │
-├── 📂 n8n/                          # Workflows automatisés (optionnel)
-│   └── workflows/
 │
 └── 📄 README.md
 ```
@@ -616,21 +590,6 @@ ocp-spare-intelligence/
 | Rapports PDF/Excel | ✅ | ✅ | ✅ | ❌ | ❌ |
 | Consulter ses commandes | ❌ | ❌ | ❌ | ❌ | ✅ |
 
----
-
-## 🖼️ Captures d'écran
-
-> 📸 *Les captures d'écran seront ajoutées après déploiement.*
-
-| Écran | Description |
-|-------|-------------|
-| `screenshots/login.png` | Page de connexion |
-| `screenshots/dashboard-admin.png` | Tableau de bord Admin |
-| `screenshots/dashboard-ia.png` | Dashboard IA Planificateur |
-| `screenshots/gestion-stock.png` | Gestion des stocks |
-| `screenshots/appel-offres.png` | Module appels d'offres |
-| `screenshots/classification-abc.png` | Matrice ABC/XYZ |
-| `screenshots/rapport-pdf.png` | Rapport mensuel PDF |
 
 ---
 
@@ -640,14 +599,10 @@ ocp-spare-intelligence/
 
 | | Informations |
 |--|-------------|
-| **Nom** | *[Votre Nom Complet]* |
-| **Formation** | *[Votre filière / école]* |
-| **Email** | *[votre.email@exemple.com]* |
-| **LinkedIn** | *[linkedin.com/in/votre-profil]* |
-| **GitHub** | *[github.com/votre-username]* |
+| **Nom** | *Mars Fadwa* |
+| **Formation** | *Technicien spécialisée en développement digital option fullstack* |
+| **Email** | *mars.f@oultook.fr* |
 
-**Encadrant OCP :** *[Nom de l'encadrant]* — *[Service / Département]*  
-**Tuteur académique :** *[Nom du tuteur]* — *[Établissement]*
 
 </div>
 
@@ -658,23 +613,12 @@ ocp-spare-intelligence/
 Ce projet est développé dans le cadre d'un **stage académique** pour **OCP Group**.
 
 ```
-Copyright © 2024-2025 — [Votre Nom] / OCP Group
+Copyright © 2024-2025 — Mars Fadwa / OCP Group
 Tous droits réservés.
 
 Ce code est fourni à des fins académiques et professionnelles.
 Toute reproduction ou utilisation commerciale sans autorisation est interdite.
 ```
-
----
-
-## 🙏 Remerciements
-
-Un grand merci aux personnes et organisations qui ont rendu ce projet possible :
-
-- 🏢 **OCP Group** — Pour l'opportunité de stage et la confiance accordée
-- 👨‍💼 **L'équipe d'encadrement OCP** — Pour le suivi et les orientations techniques
-- 🎓 **L'établissement formateur** — Pour la formation et le soutien pédagogique
-- 🛠️ **La communauté open-source** — Laravel, React, FastAPI, Scikit-learn
 
 ---
 
