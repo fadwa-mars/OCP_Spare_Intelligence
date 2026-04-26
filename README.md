@@ -205,6 +205,10 @@ Utilisateur (Browser)
 | Composer | Gestionnaire de dépendances PHP |
 | NPM / Vite | Gestionnaire de dépendances JS + bundler |
 | pip | Gestionnaire de dépendances Python |
+<<<<<<< HEAD
+=======
+| n8n *(optionnel)* | Automatisation des workflows |
+>>>>>>> livrables
 | Postman | Documentation et test des API |
 
 ---
@@ -364,7 +368,11 @@ python main.py
 | 🛒 Acheteur | acheteur@ocp.com | `password` |
 | 📊 Planificateur PI | planificateur@ocp.com | `password` |
 | 🏭 Magasinier | magasinier@ocp.com | `password` |
+<<<<<<< HEAD
 | 🤝 Fournisseur | fournisseur@ocp.com | `password` |
+=======
+| 🤝 Fournisseur | fournisseur@ocp.com | `password123` |
+>>>>>>> livrables
 
 ---
 
@@ -556,6 +564,15 @@ ocp-spare-intelligence/
 │   ├── main.py                      # Point d'entrée FastAPI
 │   └── requirements.txt
 │
+<<<<<<< HEAD
+=======
+├── 📂 Livrables/                    # Documentation fournie
+│   ├── Guide_Installation.pdf
+│   ├── Guide_Utilisateur.pdf
+│   ├── API_Documentation.postman_collection.json
+│   ├── Rapport_de_Stage.pdf
+│   └── Presentation_PowerPoint.pptx
+>>>>>>> livrables
 │
 │
 └── 📄 README.md
