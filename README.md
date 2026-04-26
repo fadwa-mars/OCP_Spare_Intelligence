@@ -364,7 +364,7 @@ python main.py
 | 🛒 Acheteur | acheteur@ocp.com | `password` |
 | 📊 Planificateur PI | planificateur@ocp.com | `password` |
 | 🏭 Magasinier | magasinier@ocp.com | `password` |
-| 🤝 Fournisseur | fournisseur@ocp.com | `password123` |
+| 🤝 Fournisseur | fournisseur@ocp.com | `password` |
 
 ---
 
