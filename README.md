@@ -1,360 +1,396 @@
-# OCP Spare Intelligence - Plateforme de gestion intelligente des pièces de rechange
+# OCP Spare Intelligence
 
 <div align="center">
 
 ![React](https://img.shields.io/badge/React-18-blue?logo=react)
-![React Router](https://img.shields.io/badge/React_Router-DOM-orange?logo=react-router)
-![Recharts](https://img.shields.io/badge/Recharts-2.12-green)
-![CSS3](https://img.shields.io/badge/CSS3-Design_System-blue?logo=css3)
-![JavaScript](https://img.shields.io/badge/JavaScript-ES6-yellow?logo=javascript)
-![Vite](https://img.shields.io/badge/Vite-5.0-purple?logo=vite)
+![Laravel](https://img.shields.io/badge/Laravel-11-red?logo=laravel)
+![Python](https://img.shields.io/badge/Python-FastAPI-green?logo=python)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?logo=mysql)
+![JWT](https://img.shields.io/badge/JWT-Sanctum-orange?logo=jsonwebtokens)
+![n8n](https://img.shields.io/badge/n8n-Automation-red?logo=n8n)
+![License](https://img.shields.io/badge/Licence-Confidentiel_OCP-darkgreen)
 
 </div>
 
+<div align="center">
+
+> Plateforme web intelligente de gestion des pièces de rechange — Site Séchage Béni Idir, Groupe OCP, Khouribga
+
+</div>
+
+---
+
 ## 📋 Description
 
-OCP Spare Intelligence est une plateforme web moderne de gestion des pièces de rechange, conçue pour les besoins industriels du Groupe OCP. L'application permet de gérer l'ensemble du cycle de vie des stocks, des achats, des appels d'offres et des commandes, avec des interfaces dédiées par rôle utilisateur.
+OCP Spare Intelligence est une plateforme web complète développée pour moderniser et automatiser la gestion des pièces de rechange sur le site industriel Séchage Béni Idir du Groupe OCP. Elle remplace les extractions manuelles SAP vers Excel par un système centralisé, temps réel et piloté par l'intelligence artificielle.
 
-## 🎯 Objectifs
+Le projet suit une démarche **MVP (Minimum Viable Product)** sur quatre semaines, articulée autour de trois services indépendants et complémentaires.
 
-- Centraliser la gestion des pièces de rechange
-- Optimiser les niveaux de stock et prévenir les ruptures
-- Digitaliser le processus d'achat et d'appel d'offres
-- Fournir des outils d'analyse et de reporting
-- Assurer une traçabilité complète des actions
+---
+
+## 🏗️ Architecture globale
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        UTILISATEURS                             │
+│   Magasinier · Acheteur · Planificateur PI · Admin · Fournisseur│
+└───────────────────────────┬─────────────────────────────────────┘
+                            │ HTTPS
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    FRONTEND — React 18                          │
+│           SPA · Design System · RBAC côté client               │
+│                  http://localhost:5173                          │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │ REST API · JWT Bearer
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                  BACKEND — Laravel 11                           │
+│        API REST · JWT · Queue · Events · SAP Import            │
+│                  http://localhost:8000                          │
+└──────────┬──────────────────────────────┬───────────────────────┘
+           │ HTTP + API Key               │ Webhooks
+           ▼                             ▼
+┌──────────────────────┐      ┌──────────────────────┐
+│  AI SERVICE          │      │  n8n Automation       │
+│  Python FastAPI      │      │  Relances · Alertes   │
+│  Prophet · XGBoost   │      │  Rapports planifiés   │
+│  Random Forest       │      │                      │
+│  Isolation Forest    │      │  http://localhost:5678│
+│  http://localhost:8001│     └──────────────────────┘
+└──────────────────────┘
+           │
+           ▼
+┌──────────────────────┐      ┌──────────────────────┐
+│  MySQL 8             │      │  SAP MM/PM            │
+│  Base de données     │      │  Import CSV/Excel     │
+│  principale          │      │  (phase MVP)          │
+└──────────────────────┘      └──────────────────────┘
+```
+
+---
+
+## 🎯 Objectifs du projet
+
+| Problème actuel | Solution apportée | Gain estimé |
+|-----------------|-------------------|-------------|
+| Extractions manuelles SAP → Excel | Dashboard temps réel | 80% |
+| Stock mort non détecté | Workflow automatisé | 60% |
+| Seuils Min/Max figés | Calcul dynamique IA (EOQ) | 70% |
+| Aucune optimisation des coûts | Recommandations TCO + EOQ | 10–25% |
+| Suivi des commandes dispersé | Pipeline Kanban temps réel | 75% |
+| Relances fournisseurs manuelles | Escalade automatique 6 niveaux | 90% |
+| Consommation suivie ponctuellement | Reporting hebdo/mensuel automatique | 85% |
+| Rapports email manuels | Envoi automatisé 100% | 100% |
+
+---
 
 ## 👥 Rôles utilisateurs
 
-| Rôle | Accès | Fonctionnalités principales |
-|------|-------|----------------------------|
-| **Magasinier** | Gestion des stocks | Dashboard KPI, Liste stock, Mouvements, Réceptions |
-| **Acheteur** | Gestion des achats | Dashboard, Demandes d'achat, Appels d'offres, Commandes, Fournisseurs |
-| **PI (Planificateur)** | Planification industrielle | Dashboard, Alertes stock, Seuils Min/Max, Reporting, Stock mort |
-| **Admin** | Administration système | Dashboard, Utilisateurs, Rôles & droits, Logs |
-| **Fournisseur** | Gestion des offres | Dashboard, Appels d'offres, Offres, Commandes |
+| Rôle | Pages | Fonctionnalités principales |
+|------|-------|-----------------------------|
+| **Magasinier** | 4 pages | Dashboard KPI · Stock · Mouvements · Réceptions |
+| **Acheteur** | 5 pages | Dashboard · Demandes achat · Appels d'offres · Commandes · Fournisseurs |
+| **Planificateur PI** | 5 pages | Dashboard · Stock & alertes · Seuils Min/Max · Reporting · Stock mort |
+| **Admin** | 4 pages | Dashboard · Utilisateurs · Rôles & droits · Logs |
+| **Fournisseur** | 4 pages | Dashboard · Appels d'offres · Offres · Commandes |
 
-## 🛠️ Stack technique
+---
+
+## 🛠️ Stack technique complète
 
 ### Frontend
-- **React 18** - Framework UI
-- **React Router DOM** - Navigation
-- **Recharts** - Graphiques et visualisations
-- **CSS Modules / Design System** - Styles personnalisés
+| Technologie | Version | Rôle |
+|-------------|---------|------|
+| React | 18 | Framework UI |
+| React Router DOM | 6 | Navigation SPA |
+| Recharts | 2.12 | Graphiques interactifs |
+| CSS Design System | — | Styles personnalisés (dark theme) |
+| Vite | 5 | Build tool |
 
-### Bibliothèques
-| Bibliothèque | Utilisation |
-|--------------|-------------|
-| `react` | Framework UI |
-| `react-dom` | Rendu DOM |
-| `react-router-dom` | Routage |
-| `recharts` | Graphiques interactifs |
-| `material-symbols-outlined` | Icônes |
+### Backend
+| Technologie | Version | Rôle |
+|-------------|---------|------|
+| Laravel | 11 | Framework PHP API REST |
+| PHP | 8.2+ | Langage serveur |
+| MySQL | 8.0 | Base de données principale |
+| JWT Sanctum | — | Authentification sécurisée |
+| Laravel Queue | — | Jobs asynchrones |
+| n8n | — | Automatisation workflows |
 
-## 📁 Structure du projet
+### AI Service
+| Technologie | Version | Rôle |
+|-------------|---------|------|
+| Python | 3.10+ | Langage IA |
+| FastAPI | 0.110 | Framework API asynchrone |
+| Prophet | 1.1 | Prévision séries temporelles |
+| XGBoost | 2.0 | Boosting gradient |
+| scikit-learn | 1.4 | Random Forest + Isolation Forest |
+| Uvicorn | — | Serveur ASGI |
+
+---
+
+## 📁 Structure du monorepo
 
 ```
-frontend/
-├── src/
-│   ├── components/          # Composants réutilisables
-│   │   ├── DataTable.jsx    # Tableau avec recherche/pagination
-│   │   ├── Modal.jsx        # Fenêtre modale générique
-│   │   ├── KanbanBoard.jsx  # Tableau Kanban drag & drop
-│   │   ├── StatCard.jsx     # Carte de statistiques KPI
-│   │   ├── ChartCard.jsx    # Conteneur pour graphiques
-│   │   ├── FormCard.jsx     # Formulaires
-│   │   ├── ConfirmDialog.jsx # Dialogue de confirmation
-│   │   ├── SelectableTable.jsx # Tableau à sélection multiple
-│   │   ├── MonProfil.jsx    # Modal de profil utilisateur
-│   │   ├── TopNav.jsx       # Barre de navigation
-│   │   ├── Hero.jsx         # En-tête de page
-│   │   ├── LocalNav.jsx     # Navigation locale
-│   │   └── PageLayout.jsx   # Layout principal
-│   │
-│   ├── pages/               # Pages par rôle
-│   │   ├── shared/          # Pages partagées
-│   │   │   ├── Login.jsx    # Authentification
-│   │   │   └── NotFound.jsx # Page 404
-│   │   ├── magasinier/      # Pages Magasinier (4 pages)
-│   │   ├── acheteur/        # Pages Acheteur (5 pages)
-│   │   ├── pi/              # Pages Planificateur PI (5 pages)
-│   │   ├── admin/           # Pages Administrateur (4 pages)
-│   │   └── fournisseur/     # Pages Fournisseur (4 pages)
-│   │
-│   ├── constants/           # Données statiques
-│   │   ├── navLinks.js      # Liens de navigation par rôle
-│   │   └── stockData.js     # Données mockées stock
-│   │
-│   ├── context/             # Contexte React
-│   │   └── AuthContext.jsx  # Gestion d'authentification
-│   │
-│   └── styles/              # Styles globaux
-│       └── design-system.css # Design system complet
+OCP_Spare_Intelligence/
+├── frontend/               # React 18 — Interface utilisateur SPA
+│   ├── src/
+│   │   ├── components/     # Composants réutilisables (DataTable, Modal, Kanban...)
+│   │   ├── pages/          # Pages par rôle (magasinier, acheteur, pi, admin, fournisseur)
+│   │   ├── constants/      # Liens de navigation, données statiques
+│   │   ├── context/        # AuthContext (authentification + rôle)
+│   │   └── styles/         # Design system complet (CSS variables)
+│   ├── package.json
+│   └── README.md
 │
-├── public/                  # Assets statiques
-├── index.html
-├── package.json
-└── README.md
+├── backend/                # Laravel 11 — API REST
+│   ├── app/
+│   │   ├── Http/           # Controllers, Middleware, Requests, Resources
+│   │   ├── Models/         # 20 modèles Eloquent
+│   │   ├── Services/       # Logique métier par domaine
+│   │   ├── Jobs/           # 6 jobs asynchrones
+│   │   └── Mail/           # 7 templates d'emails
+│   ├── database/
+│   │   ├── migrations/     # 29 migrations
+│   │   └── seeders/        # 9 seeders
+│   ├── routes/api.php      # Routes REST par rôle
+│   └── README.md
+│
+└── ai-service/             # Python FastAPI — Microservice IA
+    ├── main.py             # Point d'entrée FastAPI
+    ├── models/
+    │   ├── forecast.py     # Prophet + XGBoost
+    │   ├── anomaly.py      # Isolation Forest
+    │   └── criticality.py  # Random Forest
+    ├── requirements.txt
+    └── README.md
 ```
 
-## 🎨 Design System
+---
 
-### Couleurs principales
+## 🚀 Installation complète
 
-| Variable | Valeur | Utilisation |
-|----------|--------|-------------|
-| `--color-background` | `#0d150d` | Fond principal |
-| `--color-surface-base` | `#121212` | Surfaces de base |
-| `--color-surface-elevated` | `#181818` | Surfaces surélevées |
-| `--color-surface-interactive` | `#1f1f1f` | Éléments interactifs |
-| `--color-accent-green` | `#1ed760` | Accent principal (vert OCP) |
-| `--color-accent-green-alt` | `#1db954` | Accent alternatif |
-| `--color-text-primary` | `#ffffff` | Texte principal |
-| `--color-text-secondary` | `#b3b3b3` | Texte secondaire |
-| `--color-semantic-negative` | `#f3727f` | Erreur / Critique |
-| `--color-semantic-warning` | `#ffa42b` | Attention / Alerte |
-| `--color-semantic-info` | `#539df5` | Information |
+### Prérequis globaux
 
-### Typographie
+- Node.js >= 18
+- PHP >= 8.2 + Composer
+- MySQL 8+
+- Python >= 3.10 + pip
 
-- Police principale : **Plus Jakarta Sans**
-- Tailles : 10px, 11px, 12px, 13px, 14px, 15px, 16px, 18px, 20px, 22px, 24px, 28px, 36px
-- Épaisseurs : 400 (regular), 500 (medium), 600 (semibold), 700 (bold), 800 (extrabold)
-
-### Espacement
-
-| Variable | Valeur |
-|----------|--------|
-| `--space-micro` | 2px |
-| `--space-xsmall` | 4px |
-| `--space-small` | 8px |
-| `--space-medium` | 16px |
-| `--space-large` | 24px |
-| `--space-xlarge` | 32px |
-
-### Ombres
-
-| Variable | Valeur | Utilisation |
-|----------|--------|-------------|
-| `--shadow-heavy` | `0 8px 24px rgba(0,0,0,0.5)` | Modals, dialogues |
-| `--shadow-medium` | `0 8px 8px rgba(0,0,0,0.3)` | Cartes, dropdowns |
-| `--shadow-inset` | `inset 0 0 0 1px #7c7c7c, inset 0 2px 4px rgba(18,18,18,0.5)` | Champs de saisie |
-
-### Rayons de bordure
-
-| Variable | Valeur |
-|----------|--------|
-| `--radius-sm` | 4px |
-| `--radius-md` | 8px |
-| `--radius-lg` | 16px |
-| `--radius-xl` | 24px |
-| `--radius-full` | 9999px |
-
-## 🚀 Installation
-
-### Prérequis
-- Node.js (v18 ou supérieur)
-- npm ou yarn
-
-### Étapes d'installation
+### 1. Frontend
 
 ```bash
-# Cloner le projet
-git clone https://github.com/your-repo/ocp-spare-intelligence.git
-
-# Accéder au dossier frontend
 cd frontend
-
-# Installer les dépendances
 npm install
-
-# Installer les dépendances supplémentaires
-npm install recharts react-router-dom
-
-# Démarrer le serveur de développement
 npm run dev
+# → http://localhost:5173
 ```
 
-### Accès à l'application
+### 2. Backend
 
-Ouvrir [http://localhost:5173](http://localhost:5173) dans votre navigateur.
+```bash
+cd backend
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan jwt:secret
+php artisan migrate --seed
+php artisan serve
+# → http://localhost:8000/api
+```
+
+### 3. AI Service
+
+```bash
+cd ai-service
+python -m venv venv
+source venv/bin/activate   # Windows : venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+# → http://localhost:8001
+# → http://localhost:8001/docs (Swagger)
+```
+
+### 4. Variables d'environnement backend (.env)
+
+```env
+# Base de données
+DB_DATABASE=ocp_spare_intelligence
+DB_USERNAME=root
+DB_PASSWORD=
+
+# JWT
+JWT_SECRET=
+JWT_TTL=1440
+
+# Microservice IA
+ML_SERVICE_URL=http://localhost:8001
+ML_API_KEY=votre_cle_api
+
+# n8n
+N8N_WEBHOOK_URL=http://localhost:5678
+N8N_API_KEY=
+
+# Mail
+MAIL_FROM_ADDRESS=noreply@ocp.ma
+```
+
+---
 
 ## 🔐 Authentification
 
-### Utilisateurs de test
+### Comptes de test
 
-| Email | Rôle | Page de redirection |
-|-------|------|---------------------|
-| `magasinier@ocp.ma` | Magasinier | `/magasinier/dashboard` |
-| `acheteur@ocp.ma` | Acheteur | `/acheteur/dashboard` |
-| `pi@ocp.ma` | Planificateur PI | `/pi/dashboard` |
-| `admin@ocp.ma` | Administrateur | `/admin/dashboard` |
-| `fournisseur@ocp.ma` | Fournisseur | `/fournisseur/dashboard` |
+| Email | Mot de passe | Rôle | Redirection |
+|-------|-------------|------|-------------|
+| `magasinier@ocp.ma` | `password` | Magasinier | `/magasinier/dashboard` |
+| `acheteur@ocp.ma` | `password` | Acheteur | `/acheteur/dashboard` |
+| `pi@ocp.ma` | `password` | Planificateur PI | `/pi/dashboard` |
+| `admin@ocp.ma` | `password` | Administrateur | `/admin/dashboard` |
+| `fournisseur@ocp.ma` | `password` | Fournisseur | `/fournisseur/dashboard` |
 
-> **Note :** Tous les comptes de test acceptent n'importe quel mot de passe.
+### Flux d'authentification
 
-## 📱 Responsive Design
-
-| Breakpoint | Écran | Cartes KPI | Graphiques |
-|------------|-------|------------|------------|
-| > 1200px | XL (desktop) | 4 par ligne | 2 côte à côte |
-| 992px - 1199px | LG (desktop) | 4 par ligne | 2 côte à côte |
-| 768px - 991px | MD (tablette) | 3 par ligne | 2 côte à côte |
-| 481px - 767px | SM (tablette) | 2 par ligne | 2 côte à côte |
-| < 480px | XS (mobile) | 1 par ligne | 1 par ligne |
-
-## 📊 Fonctionnalités par rôle
-
-### Magasinier (4 pages)
-
-| Page | Fonctionnalités |
-|------|-----------------|
-| Dashboard | KPI, graphique entrées/sorties, alertes stock |
-| Liste stock | DataTable, recherche, pagination, export, modal détails |
-| Mouvements | Historique entrées/sorties, modal nouveau mouvement |
-| Réceptions | Liste commandes, modal sélection BL, validation |
-
-### Acheteur (5 pages)
-
-| Page | Fonctionnalités |
-|------|-----------------|
-| Dashboard | KPI, graphique dépenses, top fournisseurs |
-| Demandes achat | Kanban 6 colonnes, CRUD complet, drag & drop |
-| Appels d'offres | Kanban 5 colonnes, CRUD complet, drag & drop |
-| Commandes | Kanban 6 colonnes, CRUD complet, drag & drop |
-| Fournisseurs | DataTable CRUD, recherche, export |
-
-### Planificateur PI (5 pages)
-
-| Page | Fonctionnalités |
-|------|-----------------|
-| Dashboard | KPI, graphiques ABC et tendance, classification XYZ |
-| Stock alertes | Kanban 5 colonnes, traitement des alertes |
-| Seuils Min/Max | DataTable éditable, modification seuils |
-| Reporting | Graphiques consommation, top articles, export |
-| Stock mort | Kanban 5 colonnes, décisions d'écoulement |
-
-### Administrateur (4 pages)
-
-| Page | Fonctionnalités |
-|------|-----------------|
-| Dashboard | KPI, graphiques activité et logins |
-| Utilisateurs | DataTable CRUD, activation, réinitialisation MDP |
-| Rôles & droits | Matrice 5 roles × 6 modules, permissions |
-| Logs | DataTable avec filtres, modale détails, export |
-
-### Fournisseur (4 pages)
-
-| Page | Fonctionnalités |
-|------|-----------------|
-| Dashboard | KPI, graphiques, top performances |
-| Mes appels d'offres | DataTable AO, modal réponse avec document |
-| Mes offres | Kanban 5 colonnes, CRUD complet, drag & drop |
-| Mes commandes | DataTable commandes, modal détails |
-
-## 🔧 Composants réutilisables
-
-| Composant | Description | Props principales |
-|-----------|-------------|-------------------|
-| `DataTable` | Tableau avec recherche, pagination, export | `columns`, `data`, `onRowClick`, `onExport` |
-| `Modal` | Fenêtre modale générique | `isOpen`, `onClose`, `title`, `size`, `actions` |
-| `KanbanBoard` | Tableau Kanban drag & drop | `columns`, `onDragEnd`, `onEditItem`, `onDeleteItem` |
-| `StatCard` | Carte de statistiques KPI | `title`, `value`, `icon`, `trend`, `color` |
-| `ChartCard` | Conteneur pour graphiques | `title`, `height`, `actions`, `children` |
-| `FormCard` | Carte de formulaire | `title`, `icon`, `children`, `actions` |
-| `ConfirmDialog` | Dialogue de confirmation | `isOpen`, `message`, `onConfirm`, `variant` |
-| `SelectableTable` | Tableau à sélection multiple | `columns`, `data`, `selectedIds`, `onToggleSelect` |
-| `MonProfil` | Modal de profil utilisateur | `isOpen`, `onClose` |
-| `PageLayout` | Layout principal | `hero`, `navLinks`, `activeNav`, `children` |
-
-## 📦 Scripts disponibles
-
-```bash
-# Démarrer le serveur de développement
-npm run dev
-
-# Build de production
-npm run build
-
-# Prévisualisation du build
-npm run preview
 ```
+Login (email + password)
+        ↓
+POST /api/auth/login
+        ↓
+{ token JWT, user, role }
+        ↓
+Redirection vers le dashboard du rôle
+        ↓
+Authorization: Bearer <token> sur chaque requête API
+```
+
+---
+
+## 🤖 Modèles IA
+
+| Modèle | Algorithme | Endpoint | Gain |
+|--------|------------|----------|------|
+| Prévision consommation | Prophet + XGBoost | `POST /forecast` | 85% |
+| Optimisation EOQ/TCO | EOQ dynamique | `POST /eoq` | 10–25% |
+| Criticité pièces | Random Forest | `POST /criticality` | 70% |
+| Détection anomalies | Isolation Forest | `POST /anomalies` | 60% |
+
+---
+
+## 📊 Fonctionnalités principales
+
+### Gestion des stocks
+- Tableau de bord KPI en temps réel
+- Classification automatique ABC/XYZ
+- Détection et traitement du stock mort
+- Alertes de rupture imminente
+- Seuils Min/Max calculés dynamiquement par IA
+
+### Achats & Appels d'offres
+- Pipeline Kanban visuel de bout en bout
+- Sélection automatique des TOP 3 fournisseurs
+- Comparaison multicritères des offres (Prix 60% · Délai 25% · Qualité 15%)
+- Génération automatique des bons de commande
+
+### Relances fournisseurs
+- Escalade automatique sur 6 niveaux (J-7 → J+15)
+- Génération d'emails personnalisés via n8n
+- Scorecard fournisseurs mis à jour automatiquement
+- Activation du fournisseur de secours en dernier recours
+
+### Reporting automatisé
+- Rapport hebdomadaire et mensuel par email
+- Alertes en temps réel sur les anomalies
+- Export Excel et PDF à la demande
+- Historique complet avec logs d'audit
+
+### Intégration SAP
+- Import CSV/Excel depuis SAP MM/PM (phase MVP)
+- Pipeline automatisé : pending → processed / failed
+- Synchronisation planifiée via Artisan commands
+
+---
 
 ## 🗺️ Routes de l'application
 
-### Routes publiques
+| Service | URL | Description |
+|---------|-----|-------------|
+| Frontend | `http://localhost:5173` | Interface React SPA |
+| Backend API | `http://localhost:8000/api` | API REST Laravel |
+| AI Service | `http://localhost:8001` | Microservice FastAPI |
+| AI Docs | `http://localhost:8001/docs` | Swagger automatique |
+| n8n | `http://localhost:5678` | Interface automation |
 
-| Route | Composant |
-|-------|-----------|
-| `/` | Login |
-| `*` | NotFound |
+---
 
-### Routes Magasinier
+## 🧪 Tests
 
-| Route | Composant |
-|-------|-----------|
-| `/magasinier/dashboard` | DashMagasinier |
-| `/magasinier/stock` | ListeStock |
-| `/magasinier/mouvement` | Mouvement |
-| `/magasinier/reception` | Reception |
+```bash
+# Frontend — pas de tests configurés (MVP)
+# cd frontend && npm test
 
-### Routes Acheteur
+# Backend
+cd backend
+php artisan test
+php artisan test --coverage
 
-| Route | Composant |
-|-------|-----------|
-| `/acheteur/dashboard` | DashAcheteur |
-| `/acheteur/demandes` | DemandesAchat |
-| `/acheteur/appels-offres` | AppelsOffres |
-| `/acheteur/commandes` | Commandes |
-| `/acheteur/fournisseurs` | Fournisseurs |
+# AI Service
+cd ai-service
+pytest
+pytest --cov=models
+```
 
-### Routes PI
+---
 
-| Route | Composant |
-|-------|-----------|
-| `/pi/dashboard` | DashPi |
-| `/pi/stock` | StockAlertes |
-| `/pi/seuils` | SeuilsMinMax |
-| `/pi/reporting` | Reporting |
-| `/pi/stock-mort` | StockMort |
+## 📅 Planning du projet
 
-### Routes Admin
+| Jalon | Livrable | Date |
+|-------|----------|------|
+| ML1 | Cahier des charges fonctionnel | 1er avril 2026 |
+| ML2 | Analyse et conception (UML, BDD) | 8 avril 2026 |
+| ML3 | Architecture technique & choix stack | 15 avril 2026 |
+| ML4 | Développement de la plateforme | 27 avril 2026 |
+| ML5 | Tests & déploiement | 1er mai 2026 |
 
-| Route | Composant |
-|-------|-----------|
-| `/admin/dashboard` | DashAdmin |
-| `/admin/utilisateurs` | Utilisateurs |
-| `/admin/roles` | RolesDroits |
-| `/admin/logs` | Logs |
+---
 
-### Routes Fournisseur
+## 🔒 Sécurité
 
-| Route | Composant |
-|-------|-----------|
-| `/fournisseur/dashboard` | DashFournisseur |
-| `/fournisseur/appels-offres` | MesAppelsOffres |
-| `/fournisseur/offres` | MesOffres |
-| `/fournisseur/commandes` | MesCommandes |
+- Authentification JWT avec expiration configurable
+- RBAC (Role-Based Access Control) par rôle sur chaque route
+- Rate limiting sur les endpoints sensibles
+- Logs d'audit complets sur toutes les actions
+- CORS configuré pour le frontend uniquement
+- **Hébergement strictement on-premise** — aucune donnée transférée vers un cloud public
+- Conformité avec la politique IT du Groupe OCP
 
-## 🤝 Contribution
+---
 
-1. Créer une branche pour votre fonctionnalité
-2. Développer en respectant le design system
-3. Tester sur différentes tailles d'écran
-4. Créer une Pull Request
+## 📄 Documentation
+
+Chaque service dispose de son propre README détaillé :
+
+| Service | Documentation |
+|---------|--------------|
+| Frontend | [`frontend/README.md`](./frontend/README.md) |
+| Backend | [`backend/README.md`](./backend/README.md) |
+| AI Service | [`ai-service/README.md`](./ai-service/README.md) |
+
+---
 
 ## 📄 Licence
 
-Ce projet est confidentiel et propriété du Groupe OCP.
+Ce projet est **confidentiel** et propriété exclusive du **Groupe OCP**. Toute reproduction, distribution ou utilisation en dehors du cadre défini est strictement interdite.
 
-## 👨‍💻 Auteurs
+## 👨‍💻 Auteur
 
-Développé par MARS FADWA.
+Développé par **Mars Fadwa** — Stage ingénieur OCP Site Séchage Béni Idir · Khouribga · Mars–Mai 2026
 
 ## 📞 Support
 
-Pour toute question ou assistance, contacter l'administrateur système.
+Pour toute question ou assistance technique, contacter l'administrateur système OCP.
 
 ---
 
 **Version : 1.0.0**
-**Dernière mise à jour : Mai 2024**
+**Dernière mise à jour : Mai 2026**
