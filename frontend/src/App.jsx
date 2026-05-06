@@ -1,162 +1,196 @@
 // src/App.jsx
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider, useAuth } from './contexts/AuthContext'
-import Login from './pages/auth/Login'
-import Layout from './components/Layout/Layout'
-import ArticleList from './pages/articles/ArticleList'
-import ArticleForm from './pages/articles/ArticleForm'
-import ArticleDetail from './pages/articles/ArticleDetail'
-import StockList from './pages/stocks/StockList'
-import DemandeList from './pages/demandes/DemandeList'
-import DemandeForm from './pages/demandes/DemandeForm'
-import CommandeList from './pages/commandes/CommandeList'
-import CommandeForm from './pages/commandes/CommandeForm'
-import AppelOffreList from './pages/appels-offres/AppelOffreList'
-import AppelOffreForm from './pages/appels-offres/AppelOffreForm'
-import SelectionOffre from './pages/appels-offres/SelectionOffre'
-import Dashboard from './pages/Dashboard'
-import Profile from './pages/profile/Profile'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
-// ========== IMPORTS FOURNISSEUR ==========
-import AppelsOffresFournisseur from './pages/fournisseur/AppelsOffres'
-import MesOffres from './pages/fournisseur/MesOffres'
-import MesCommandes from './pages/fournisseur/MesCommandes'
-// ==========================================
+// Landing page
+import Landing from './pages/Landing';
 
-// ========== IMPORTS FOURNISSEURS (CRUD) ==========
-import FournisseurList from './pages/fournisseurs/FournisseurList'
-import FournisseurForm from './pages/fournisseurs/FournisseurForm'
-import FournisseurDetail from './pages/fournisseurs/FournisseurDetail'
-// =================================================
+// Shared
+import Login    from './pages/shared/Login';
+import NotFound from './pages/shared/NotFound';
 
-// ========== IMPORTS ALERTES ==========
-import AlerteList from './pages/alertes/AlerteList'
-// =====================================
+// Magasinier
+import DashMagasinier from './pages/magasinier/DashMagasinier';
+import ListeStock     from './pages/magasinier/ListeStock';
+import Mouvement      from './pages/magasinier/Mouvement';
+import Reception      from './pages/magasinier/Reception';
 
-// ========== IMPORTS RAPPORTS ==========
-import ReportingList from './pages/reportings/ReportingList'
-// ======================================
+// Acheteur
+import DashAcheteur      from './pages/acheteur/DashAcheteur';
+import DemandesAchat     from './pages/acheteur/DemandesAchat';
+import AppelsOffres      from './pages/acheteur/AppelsOffres';
+import Commandes         from './pages/acheteur/Commandes';
+import Fournisseurs      from './pages/acheteur/Fournisseurs';
 
-// ========== IMPORTS CLASSIFICATIONS ==========
-import ClassificationList from './pages/classifications/ClassificationList'
-// =============================================
+// PI
+import DashPi            from './pages/pi/DashPi';
+import StockAlertes      from './pages/pi/StockAlertes';
+import SeuilsMinMax      from './pages/pi/SeuilsMinMax';
+import Reporting         from './pages/pi/Reporting';
+import StockMort         from './pages/pi/StockMort';
 
-// ========== IMPORTS SIMULATIONS ==========
-import SimulationList from './pages/simulations/SimulationList'
-// =========================================
+// Admin
+import DashAdmin         from './pages/admin/DashAdmin';
+import Utilisateurs      from './pages/admin/Utilisateurs';
+import RolesDroits       from './pages/admin/RolesDroits';
+import Logs              from './pages/admin/Logs';
 
-import './App.css'
+// Fournisseur
+import DashFournisseur   from './pages/fournisseur/DashFournisseur';
+import MesAppelsOffres   from './pages/fournisseur/MesAppelsOffres';
+import MesOffres         from './pages/fournisseur/MesOffres';
+import MesCommandes      from './pages/fournisseur/MesCommandes';
 
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth()
-
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Chargement...</span>
-        </div>
-      </div>
-    )
-  }
-
-  return isAuthenticated ? children : <Navigate to="/login" />
+// Guard : redirige vers login si non connecté
+function PrivateRoute({ children, allowedRoles }) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/login" replace />;
+  return children;
 }
 
-const AppRoutes = () => {
-  const { isAuthenticated, loading, user } = useAuth()
-
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Chargement...</span>
-        </div>
-      </div>
-    )
-  }
-
+function AppRoutes() {
   return (
     <Routes>
-      {/* Route publique */}
-      <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} />
-      
-      {/* Routes protegees avec Layout */}
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Layout />
-        </ProtectedRoute>
-      }>
-        <Route index element={<Navigate to="/dashboard" />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        
-        {/* Routes Articles */}
-        <Route path="articles" element={<ArticleList />} />
-        <Route path="articles/new" element={<ArticleForm />} />
-        <Route path="articles/:id" element={<ArticleDetail />} />
-        <Route path="articles/edit/:id" element={<ArticleForm />} />
-        
-        {/* Routes Stocks */}
-        <Route path="stocks" element={<StockList />} />
-        
-        {/* Routes Demandes d'achat */}
-        <Route path="demandes" element={<DemandeList />} />
-        <Route path="demandes/new" element={<DemandeForm />} />
-        <Route path="demandes/edit/:id" element={<DemandeForm />} />
-        
-        {/* Routes Commandes */}
-        <Route path="commandes" element={<CommandeList />} />
-        <Route path="commandes/new" element={<CommandeForm />} />
-        
-        {/* Routes Appels d'offres (admin, acheteur) */}
-        <Route path="appels-offres" element={<AppelOffreList />} />
-        <Route path="appels-offres/new" element={<AppelOffreForm />} />
-        <Route path="appels-offres/:id/selection" element={<SelectionOffre />} />
-        
-        {/* Routes Alertes */}
-        <Route path="alertes" element={<AlerteList />} />
-        
-        {/* Routes Rapports */}
-        <Route path="reportings" element={<ReportingList />} />
-        
-        {/* Routes Classifications */}
-        <Route path="classifications" element={<ClassificationList />} />
-        
-        {/* Routes Simulations */}
-        <Route path="simulations" element={<SimulationList />} />
-        
-        {/* Routes Profil */}
-        <Route path="profile" element={<Profile />} />
-        
-        {/* ========== ROUTES FOURNISSEUR (PROFIL) ========== */}
-        <Route path="fournisseur/appels-offres" element={<AppelsOffresFournisseur />} />
-        <Route path="fournisseur/mes-offres" element={<MesOffres />} />
-        <Route path="fournisseur/mes-commandes" element={<MesCommandes />} />
-        {/* ================================================ */}
-        
-        {/* ========== ROUTES FOURNISSEURS (CRUD) ========== */}
-        <Route path="fournisseurs" element={<FournisseurList />} />
-        <Route path="fournisseurs/new" element={<FournisseurForm />} />
-        <Route path="fournisseurs/:id" element={<FournisseurDetail />} />
-        <Route path="fournisseurs/edit/:id" element={<FournisseurForm />} />
-        {/* ================================================ */}
-      </Route>
-      
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/dashboard" />} />
+      {/* Public */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+
+      {/* ==================== MAGASINIER ==================== */}
+      <Route path="/magasinier/dashboard" element={
+        <PrivateRoute allowedRoles={['magasinier']}>
+          <DashMagasinier />
+        </PrivateRoute>
+      } />
+      <Route path="/magasinier/stock" element={
+        <PrivateRoute allowedRoles={['magasinier']}>
+          <ListeStock />
+        </PrivateRoute>
+      } />
+      <Route path="/magasinier/mouvement" element={
+        <PrivateRoute allowedRoles={['magasinier']}>
+          <Mouvement />
+        </PrivateRoute>
+      } />
+      <Route path="/magasinier/reception" element={
+        <PrivateRoute allowedRoles={['magasinier']}>
+          <Reception />
+        </PrivateRoute>
+      } />
+
+      {/* ==================== ACHETEUR ==================== */}
+      <Route path="/acheteur/dashboard" element={
+        <PrivateRoute allowedRoles={['acheteur']}>
+          <DashAcheteur />
+        </PrivateRoute>
+      } />
+      <Route path="/acheteur/demandes" element={
+        <PrivateRoute allowedRoles={['acheteur']}>
+          <DemandesAchat />
+        </PrivateRoute>
+      } />
+      <Route path="/acheteur/appels-offres" element={
+        <PrivateRoute allowedRoles={['acheteur']}>
+          <AppelsOffres />
+        </PrivateRoute>
+      } />
+      <Route path="/acheteur/commandes" element={
+        <PrivateRoute allowedRoles={['acheteur']}>
+          <Commandes />
+        </PrivateRoute>
+      } />
+      <Route path="/acheteur/fournisseurs" element={
+        <PrivateRoute allowedRoles={['acheteur']}>
+          <Fournisseurs />
+        </PrivateRoute>
+      } />
+
+      {/* ==================== PI ==================== */}
+      <Route path="/pi/dashboard" element={
+        <PrivateRoute allowedRoles={['pi']}>
+          <DashPi />
+        </PrivateRoute>
+      } />
+      <Route path="/pi/stock" element={
+        <PrivateRoute allowedRoles={['pi']}>
+          <StockAlertes />
+        </PrivateRoute>
+      } />
+      <Route path="/pi/seuils" element={
+        <PrivateRoute allowedRoles={['pi']}>
+          <SeuilsMinMax />
+        </PrivateRoute>
+      } />
+      <Route path="/pi/reporting" element={
+        <PrivateRoute allowedRoles={['pi']}>
+          <Reporting />
+        </PrivateRoute>
+      } />
+      <Route path="/pi/stock-mort" element={
+        <PrivateRoute allowedRoles={['pi']}>
+          <StockMort />
+        </PrivateRoute>
+      } />
+
+      {/* ==================== ADMIN ==================== */}
+      <Route path="/admin/dashboard" element={
+        <PrivateRoute allowedRoles={['admin']}>
+          <DashAdmin />
+        </PrivateRoute>
+      } />
+      <Route path="/admin/utilisateurs" element={
+        <PrivateRoute allowedRoles={['admin']}>
+          <Utilisateurs />
+        </PrivateRoute>
+      } />
+      <Route path="/admin/roles" element={
+        <PrivateRoute allowedRoles={['admin']}>
+          <RolesDroits />
+        </PrivateRoute>
+      } />
+      <Route path="/admin/logs" element={
+        <PrivateRoute allowedRoles={['admin']}>
+          <Logs />
+        </PrivateRoute>
+      } />
+
+      {/* ==================== FOURNISSEUR ==================== */}
+      <Route path="/fournisseur/dashboard" element={
+        <PrivateRoute allowedRoles={['fournisseur']}>
+          <DashFournisseur />
+        </PrivateRoute>
+      } />
+      <Route path="/fournisseur/appels-offres" element={
+        <PrivateRoute allowedRoles={['fournisseur']}>
+          <MesAppelsOffres />
+        </PrivateRoute>
+      } />
+      <Route path="/fournisseur/offres" element={
+        <PrivateRoute allowedRoles={['fournisseur']}>
+          <MesOffres />
+        </PrivateRoute>
+      } />
+      <Route path="/fournisseur/commandes" element={
+        <PrivateRoute allowedRoles={['fournisseur']}>
+          <MesCommandes />
+        </PrivateRoute>
+      } />
+
+      {/* 404 */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
-  )
+  );
 }
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
+    <AuthProvider>
+      <Router>
         <AppRoutes />
-      </AuthProvider>
-    </Router>
-  )
+      </Router>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

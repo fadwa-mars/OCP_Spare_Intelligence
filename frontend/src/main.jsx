@@ -1,27 +1,16 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ToastContainer } from 'react-toastify'
-import 'bootstrap/dist/js/bootstrap.bundle.min.js'
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import App from './App'
+// main.jsx - TEST (commenter Bootstrap)
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
 import './index.css'
+import './styles/design-system.css'
+import App from './App.jsx'
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000,
-    },
-  },
-})
+// import 'bootstrap/dist/css/bootstrap.min.css';
+// import 'bootstrap-icons/font/bootstrap-icons.css';
+// import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-      <ToastContainer position="top-right" autoClose={3000} />
-    </QueryClientProvider>
-  </React.StrictMode>
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
 )

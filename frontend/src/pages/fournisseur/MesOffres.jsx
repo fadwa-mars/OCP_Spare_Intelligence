@@ -1,124 +1,305 @@
 // src/pages/fournisseur/MesOffres.jsx
-import React, { useState, useEffect } from 'react'
-import axiosInstance from '../../api/axiosConfig'
-import { toast } from 'react-toastify'
+import React, { useState } from 'react';
+import PageLayout from '../../components/PageLayout';
+import KanbanBoard from '../../components/KanbanBoard';
+import Modal from '../../components/Modal';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import { FormButton } from '../../components/FormCard';
+import { NAV_LINKS_BY_ROLE } from '../../constants/navLinks';
+import '../../styles/design-system.css';
 
-const MesOffres = () => {
-  const [offres, setOffres] = useState([])
-  const [loading, setLoading] = useState(true)
+export default function MesOffres() {
+  const [activeNav, setActiveNav] = useState('Mes offres');
+  
+  const [modalOpen, setModalOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [readModalOpen, setReadModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [viewingItem, setViewingItem] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    montant: '',
+    delais: '',
+    document: null,
+    status: 'draft'
+  });
 
-  useEffect(() => {
-    fetchOffres()
-  }, [])
+  const [columns, setColumns] = useState([
+    { id: 'draft', title: 'Brouillon', color: '#6c757d', items: [
+      { id: 1, title: 'AO-2024-001 - Pompes centrifuges', content: 'Offre technique et commerciale en cours', status: 'draft', metadata: { deadline: '20/05', avancement: '60%', montant: '240K MAD' } },
+      { id: 2, title: 'AO-2024-003 - Moteurs électriques', content: 'En attente validation interne', status: 'draft', metadata: { deadline: '25/05', avancement: '30%', montant: '310K MAD' } }
+    ] },
+    { id: 'submitted', title: 'Soumise', color: '#0d6efd', items: [
+      { id: 3, title: 'AO-2024-002 - Roulements SKF', content: 'Offre déposée le 10/05', status: 'submitted', metadata: { date_soumission: '10/05', montant: '45K MAD', delais: '15 jours' } },
+      { id: 4, title: 'AO-2024-004 - Filtres hydrauliques', content: 'Offre déposée le 12/05', status: 'submitted', metadata: { date_soumission: '12/05', montant: '28K MAD', delais: '10 jours' } }
+    ] },
+    { id: 'evaluation', title: 'En évaluation', color: '#fd7e14', items: [
+      { id: 5, title: 'AO-2024-005 - Vannes à boisseau', content: 'En cours d\'analyse par acheteur', status: 'evaluation', metadata: { date_soumission: '05/05', concurrents: '3', position: '2eme' } }
+    ] },
+    { id: 'accepted', title: 'Acceptée', color: '#198754', items: [
+      { id: 6, title: 'AO-2024-006 - Courroies transmission', content: 'Commande reçue le 01/05', status: 'accepted', metadata: { montant: '12K MAD', reference_cmd: 'CMD-2024-006', livraison: 'Prevue le 10/06' } }
+    ] },
+    { id: 'rejected', title: 'Rejetée', color: '#dc3545', items: [
+      { id: 7, title: 'AO-2024-007 - Outillage specifique', content: 'Offre non retenue', status: 'rejected', metadata: { motif: 'Prix trop eleve', feedback: 'Revoir grille tarifaire' } }
+    ] }
+  ]);
 
-  const fetchOffres = async () => {
-    setLoading(true)
-    try {
-      const response = await axiosInstance.get('/fournisseur/mes-offres')
-      let offersData = []
-      if (response.data.data && Array.isArray(response.data.data)) {
-        offersData = response.data.data
+  const generateId = () => {
+    const allItems = columns.flatMap(col => col.items);
+    const maxId = Math.max(0, ...allItems.map(item => item.id));
+    return maxId + 1;
+  };
+
+  const handleAdd = (colId = 'draft') => {
+    setEditingItem(null);
+    setFormData({ title: '', content: '', montant: '', delais: '', document: null, status: colId });
+    setModalOpen(true);
+  };
+
+  const handleEdit = (item) => {
+    setEditingItem(item);
+    setFormData({
+      title: item.title,
+      content: item.content,
+      montant: item.metadata?.montant || '',
+      delais: item.metadata?.delais || '',
+      document: null,
+      status: item.status || 'draft'
+    });
+    setModalOpen(true);
+  };
+
+  const handleViewDetails = (item) => {
+    setViewingItem(item);
+    setReadModalOpen(true);
+  };
+
+  const handleDelete = (item) => {
+    setItemToDelete(item);
+    setConfirmOpen(true);
+  };
+
+  const handleSave = () => {
+    if (!formData.title.trim()) { alert("Le titre est requis"); return; }
+    if (!formData.montant) { alert("Le montant est requis"); return; }
+    if (!formData.delais) { alert("Le delai est requis"); return; }
+    
+    const newItem = {
+      id: editingItem ? editingItem.id : generateId(),
+      title: formData.title,
+      content: formData.content,
+      status: formData.status,
+      metadata: {
+        montant: formData.montant,
+        delais: formData.delais,
+        date_soumission: new Date().toLocaleDateString('fr-FR')
       }
-      setOffres(offersData)
-    } catch (error) {
-      console.error('Erreur chargement offres:', error)
-      toast.error('Erreur lors du chargement de vos offres')
-    } finally {
-      setLoading(false)
-    }
-  }
+    };
+    if (formData.document) newItem.metadata.document = formData.document.name;
 
-  const getStatutBadge = (statut) => {
-    const badges = {
-      'soumise': { class: 'warning', text: 'En attente' },
-      'acceptee': { class: 'success', text: '✅ Acceptée - Commande créée' },
-      'rejetee': { class: 'danger', text: 'Rejetée' }
+    if (editingItem) {
+      setColumns(prev => prev.map(col => ({
+        ...col,
+        items: col.items.map(item => item.id === editingItem.id ? newItem : item)
+      })));
+    } else {
+      setColumns(prev => prev.map(col => 
+        col.id === formData.status ? { ...col, items: [...col.items, newItem] } : col
+      ));
     }
-    const b = badges[statut] || { class: 'secondary', text: statut || 'Inconnu' }
-    return <span className={`badge bg-${b.class} bg-opacity-10 text-${b.class}`}>{b.text}</span>
-  }
+    setModalOpen(false);
+    setEditingItem(null);
+  };
 
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Chargement...</span>
-        </div>
-      </div>
-    )
-  }
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      setColumns(prev => prev.map(col => ({
+        ...col,
+        items: col.items.filter(i => i.id !== itemToDelete.id)
+      })));
+    }
+    setConfirmOpen(false);
+    setItemToDelete(null);
+  };
+
+  const handleDragEnd = (itemId, sourceCol, targetCol) => {
+    console.log(`Offre ${itemId} déplacée de ${sourceCol} vers ${targetCol}`);
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setFormData({...formData, document: e.target.files[0]});
+    }
+  };
 
   return (
-    <div>
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
-        <div>
-          <h4 className="fw-bold mb-1 text-primary">Mes offres soumises</h4>
-          <p className="text-secondary small mb-0">Suivez l'état de vos propositions</p>
-        </div>
-        <button 
-          className="btn btn-outline-primary mt-3 mt-md-0"
-          onClick={() => window.location.href = '/fournisseur/appels-offres'}
-        >
-          <i className="bi bi-plus-lg me-2"></i>Nouvelle offre
-        </button>
-      </div>
+    <PageLayout
+      navLinks={NAV_LINKS_BY_ROLE.fournisseur}
+      activeNav={activeNav}
+      onNavChange={setActiveNav}
+      hero={{
+        title: 'Mes offres',
+        subtitle: 'Suivez vos propositions commerciales en mode Kanban',
+        ctaLabel: 'NOUVELLE OFFRE',
+        ctaIcon: 'add',
+        onCta: () => handleAdd(),
+      }}
+    >
+      <KanbanBoard 
+        columns={columns} 
+        onDragEnd={handleDragEnd}
+        onEditItem={handleEdit}
+        onDeleteItem={handleDelete}
+        onViewDetails={handleViewDetails}
+        showAddButton={true}
+        onAddItem={handleAdd}
+      />
 
-      <div className="card border-0 shadow-sm rounded-3">
-        <div className="card-body p-0">
-          <div className="table-responsive">
-            <table className="table table-borderless table-hover mb-0">
-              <thead className="bg-light">
-                <tr>
-                  <th className="py-3 px-3">Appel d'offres</th>
-                  <th className="py-3 text-center">Prix unitaire</th>
-                  <th className="py-3 text-center">Délai</th>
-                  <th className="py-3 text-center">Montant total</th>
-                  <th className="py-3 text-center">Statut</th>
-                  <th className="py-3 text-center">Date soumission</th>
-                </tr>
-              </thead>
-              <tbody>
-                {offres.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="text-center py-5 text-secondary">
-                      <i className="bi bi-inbox fs-1 d-block mb-2"></i>
-                      Vous n'avez pas encore soumis d'offres
-                    </td>
-                  </tr>
-                ) : (
-                  offres.map((offre) => (
-                    <tr key={offre.id} style={{ borderBottom: '1px solid #f1f1f1' }}>
-                      <td className="py-3 px-3">
-                        <div className="fw-semibold">{offre.appel_offre?.objet || 'N/A'}</div>
-                        <small className="text-muted">
-                          {offre.appel_offre?.demande_achat?.article?.designation || 'Article non spécifié'}
-                        </small>
-                       </td>
-                      <td className="py-3 text-center">
-                        {(offre.prix_unitaire || 0).toLocaleString()} DH
-                      </td>
-                      <td className="py-3 text-center">
-                        {offre.delai_livraison || 0} jours
-                      </td>
-                      <td className="py-3 text-center">
-                        {(offre.montant_total || 0).toLocaleString()} DH
-                      </td>
-                      <td className="py-3 text-center">
-                        {getStatutBadge(offre.statut)}
-                      </td>
-                      <td className="py-3 text-center">
-                        {new Date(offre.date_soumission || offre.created_at).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+      {/* Modal CRUD Ajout/Modification */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editingItem ? "Modifier l'offre" : "Nouvelle offre"}
+        size="md"
+        actions={
+          <>
+            <FormButton label="ANNULER" variant="secondary" onClick={() => setModalOpen(false)} />
+            <FormButton label="SAUVEGARDER" variant="primary" onClick={handleSave} />
+          </>
+        }
+      >
+        <div className="read-modal__content">
+          <div className="read-modal__field">
+            <div className="read-modal__label">Appel d'offres</div>
+            <input
+              className="field__input"
+              type="text"
+              placeholder="AO-2024-XXX - Description"
+              value={formData.title}
+              onChange={(e) => setFormData({...formData, title: e.target.value})}
+            />
+          </div>
+          <div className="read-modal__field">
+            <div className="read-modal__label">Description</div>
+            <textarea
+              className="field__input field__textarea"
+              placeholder="Description technique, garanties, conditions..."
+              value={formData.content}
+              onChange={(e) => setFormData({...formData, content: e.target.value})}
+              rows={3}
+            />
+          </div>
+          <div className="form-row">
+            <div className="read-modal__field">
+              <div className="read-modal__label">Montant (MAD)</div>
+              <input
+                className="field__input"
+                type="number"
+                placeholder="0"
+                value={formData.montant}
+                onChange={(e) => setFormData({...formData, montant: e.target.value})}
+              />
+            </div>
+            <div className="read-modal__field">
+              <div className="read-modal__label">Delai de livraison</div>
+              <input
+                className="field__input"
+                type="text"
+                placeholder="30 jours"
+                value={formData.delais}
+                onChange={(e) => setFormData({...formData, delais: e.target.value})}
+              />
+            </div>
+          </div>
+          
+          {/* Input file stylisé */}
+          <div className="read-modal__field">
+            <div className="read-modal__label">Document joint (optionnel)</div>
+            <div className="file-input-wrapper">
+              <label className="file-input-label">
+                <span className="file-input-text">
+                  {formData.document ? formData.document.name : 'Aucun fichier sélectionné'}
+                </span>
+                <span className="file-input-button">PARCOURIR</span>
+                <input
+                  type="file"
+                  className="file-input"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileChange}
+                />
+              </label>
+            </div>
+            {formData.document && (
+              <div className="file-info">
+                <span className="material-symbols-outlined">description</span>
+                {formData.document.name}
+              </div>
+            )}
+          </div>
+          
+          <div className="read-modal__field">
+            <div className="read-modal__label">Statut</div>
+            <select
+              className="field__input field__select"
+              value={formData.status}
+              onChange={(e) => setFormData({...formData, status: e.target.value})}
+            >
+              <option value="draft">Brouillon</option>
+              <option value="submitted">Soumise</option>
+              <option value="evaluation">En evaluation</option>
+              <option value="accepted">Acceptee</option>
+              <option value="rejected">Rejetee</option>
+            </select>
           </div>
         </div>
-      </div>
-    </div>
-  )
-}
+      </Modal>
 
-export default MesOffres
+      {/* Modal Visualisation */}
+      <Modal
+        isOpen={readModalOpen}
+        onClose={() => setReadModalOpen(false)}
+        title={`Details - ${viewingItem?.title}`}
+        size="md"
+        actions={
+          <FormButton label="FERMER" variant="secondary" onClick={() => setReadModalOpen(false)} />
+        }
+      >
+        {viewingItem && (
+          <div className="read-modal__content">
+            <div className="read-modal__field">
+              <div className="read-modal__label">Description</div>
+              <div className="read-modal__value">{viewingItem.content}</div>
+            </div>
+            {viewingItem.metadata && Object.entries(viewingItem.metadata).map(([key, val]) => (
+              <div key={key} className="read-modal__field">
+                <div className="read-modal__label">{key.replace(/_/g, ' ')}</div>
+                <div className="read-modal__value">{val}</div>
+              </div>
+            ))}
+            <div className="read-modal__field">
+              <div className="read-modal__label">Statut</div>
+              <div className="read-modal__value">
+                {columns.find(c => c.id === viewingItem.status)?.title || viewingItem.status}
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Confirmation suppression */}
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Confirmer la suppression"
+        message={`Supprimer definitivement "${itemToDelete?.title}" ?`}
+        variant="danger"
+        confirmText="SUPPRIMER"
+        cancelText="ANNULER"
+      />
+    </PageLayout>
+  );
+}
