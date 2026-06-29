@@ -5,32 +5,25 @@ import DataTable from '../../components/DataTable';
 import Modal from '../../components/Modal';
 import { Field, FormButton, FormRow } from '../../components/FormCard';
 import { NAV_LINKS_BY_ROLE } from '../../constants/navLinks';
-import '../../styles/design-system.css';
+import { motion } from 'framer-motion';
 
-// Données mockées
+// Données mockées avec valeurs IA
 const SEUILS_DATA = [
-  { id: 1, code: 'SAP-10492', designation: 'Roulement à billes SKF', min: 50, max: 200, actuel: 145, recommandation: 'Optimal' },
-  { id: 2, code: 'SAP-09211', designation: 'Courroie transmission', min: 10, max: 50, actuel: 2, recommandation: 'Urgent réappro' },
-  { id: 3, code: 'SAP-28571', designation: 'Filtre à huile', min: 20, max: 100, actuel: 24, recommandation: 'OK' },
-  { id: 4, code: 'SAP-88271', designation: 'Contacteur Schneider', min: 15, max: 60, actuel: 12, recommandation: 'Sous seuil' },
+  { id: 1, code: 'SAP-10492', designation: 'Roulement SKF', min: 50, max: 200, actuel: 145, recommandation: 'Optimal', aiMin: 65, aiMax: 220, cmj: 4.5, leadTime: 14, sigma: 1.2 },
+  { id: 2, code: 'SAP-09211', designation: 'Courroie', min: 10, max: 50, actuel: 2, recommandation: 'Urgent', aiMin: 15, aiMax: 60, cmj: 1.1, leadTime: 7, sigma: 0.5 },
+  { id: 3, code: 'SAP-28571', designation: 'Filtre hydraulique', min: 20, max: 100, actuel: 24, recommandation: 'OK', aiMin: 20, aiMax: 100, cmj: 2.0, leadTime: 10, sigma: 0.8 },
+  { id: 4, code: 'SAP-88271', designation: 'Contacteur', min: 15, max: 60, actuel: 12, recommandation: 'Sous seuil', aiMin: 25, aiMax: 80, cmj: 3.5, leadTime: 21, sigma: 2.1 },
 ];
 
 const COLUMNS = [
   { key: 'code', label: 'Code SAP', type: 'code', align: 'left' },
   { key: 'designation', label: 'Désignation', type: 'text', align: 'left' },
-  { key: 'min', label: 'Min', type: 'text', align: 'right' },
-  { key: 'max', label: 'Max', type: 'text', align: 'right' },
-  { key: 'actuel', label: 'Stock actuel', type: 'qty', align: 'right', seuil: 'min' },
-  { key: 'recommandation', label: 'Recommandation', type: 'badge', align: 'center' },
-  // Plus de colonne 'actions'
+  { key: 'min', label: 'Min Actuel', type: 'text', align: 'right' },
+  { key: 'aiMin', label: 'Min IA (Z=1.65)', type: 'text', align: 'right' },
+  { key: 'max', label: 'Max Actuel', type: 'text', align: 'right' },
+  { key: 'aiMax', label: 'Max IA', type: 'text', align: 'right' },
+  { key: 'actuel', label: 'Stock', type: 'qty', align: 'right' },
 ];
-
-const getRecommandationClass = (recommandation) => {
-  if (recommandation === 'Optimal') return 'badge--optimal';
-  if (recommandation === 'Sous seuil') return 'badge--warning';
-  if (recommandation === 'Urgent réappro') return 'badge--critical';
-  return 'badge--optimal';
-};
 
 export default function SeuilsMinMax() {
   const [activeNav, setActiveNav] = useState('Seuils Min/Max');
@@ -45,11 +38,14 @@ export default function SeuilsMinMax() {
     item.designation.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Clic sur la ligne entière
   const handleRowClick = (row) => {
     setEditingItem(row);
     setFormData({ min: row.min.toString(), max: row.max.toString() });
     setModalOpen(true);
+  };
+
+  const handleApplyAI = () => {
+    setFormData({ min: editingItem.aiMin.toString(), max: editingItem.aiMax.toString() });
   };
 
   const handleSave = () => {
@@ -58,13 +54,7 @@ export default function SeuilsMinMax() {
       const newMax = parseInt(formData.max);
       
       setSeuils(prev => prev.map(item => 
-        item.id === editingItem.id ? { 
-          ...item, 
-          min: newMin, 
-          max: newMax,
-          recommandation: newMin > item.actuel ? 'Sous seuil' : 
-                         newMax < item.actuel ? 'Dépassement' : 'Optimal'
-        } : item
+        item.id === editingItem.id ? { ...item, min: newMin, max: newMax } : item
       ));
     }
     setModalOpen(false);
@@ -77,35 +67,36 @@ export default function SeuilsMinMax() {
       activeNav={activeNav}
       onNavChange={setActiveNav}
       hero={{
-        title: 'Seuils Min/Max',
-        subtitle: "Définissez les niveaux de stock minimum et maximum par article",
-        ctaLabel: 'EXPORTER',
-        ctaIcon: 'download',
-        onCta: () => console.log('Export seuils'),
+        title: 'Optimisation des Seuils (IA)',
+        subtitle: "Calcul intelligent basé sur la formule : CMJ × L + Zα × σ × √L",
+        ctaLabel: 'APPLIQUER TOUT',
+        ctaIcon: 'auto_awesome',
+        onCta: () => console.log('Appliquer IA partout'),
       }}
     >
-      <DataTable
-        columns={COLUMNS.map(col => ({
-          ...col,
-          render: col.key === 'recommandation' ? (row) => (
-            <span className={`badge ${getRecommandationClass(row.recommandation)}`}>{row.recommandation}</span>
-          ) : undefined
-        }))}
-        data={filtered}
-        keyField="id"
-        searchValue={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Rechercher par Code SAP ou Désignation..."
-        totalCount={seuils.length}
-        pageSize={10}
-        onExport={() => console.log('Export Excel')}
-        onRowClick={handleRowClick}
-      />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <DataTable
+          columns={COLUMNS.map(col => ({
+            ...col,
+            render: col.key === 'aiMin' || col.key === 'aiMax' ? (row) => (
+              <span style={{ color: 'var(--color-accent-green)', fontWeight: 'bold' }}>{row[col.key]}</span>
+            ) : undefined
+          }))}
+          data={filtered}
+          keyField="id"
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Rechercher article..."
+          totalCount={seuils.length}
+          pageSize={10}
+          onRowClick={handleRowClick}
+        />
+      </motion.div>
 
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={`Modifier les seuils - ${editingItem?.code}`}
+        title={`Optimisation IA - ${editingItem?.code}`}
         size="md"
         actions={
           <>
@@ -116,27 +107,28 @@ export default function SeuilsMinMax() {
       >
         {editingItem && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-medium)' }}>
-            <div className="field">
-              <div className="field__label">Code SAP</div>
-              <div className="field__input" style={{ background: 'transparent', boxShadow: 'none', paddingLeft: 0 }}>
-                {editingItem.code}
+            <div className="glass-card" style={{ padding: 'var(--space-medium)', marginBottom: 'var(--space-medium)', borderLeft: '4px solid var(--color-accent-green)' }}>
+              <h6 style={{ color: 'var(--color-accent-green)', marginBottom: 'var(--space-small)', display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 8px 0', fontSize: '16px' }}>
+                <span className="material-symbols-outlined">smart_toy</span> Détails Algorithme
+              </h6>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-small)', color: 'var(--color-text-secondary)', fontSize: '13px' }}>
+                <div>CMJ: {editingItem.cmj}</div>
+                <div>Lead Time (L): {editingItem.leadTime} j</div>
+                <div>Sigma (σ): {editingItem.sigma}</div>
+                <div>Confiance (Z): 1.65 (95%)</div>
               </div>
             </div>
-            <div className="field">
-              <div className="field__label">Désignation</div>
-              <div className="field__input" style={{ background: 'transparent', boxShadow: 'none', paddingLeft: 0 }}>
-                {editingItem.designation}
-              </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-small)' }}>
+              <span style={{ fontWeight: 'bold', color: 'var(--color-text-primary)' }}>Ajustement manuel</span>
+              <button className="fc-btn fc-btn--secondary" onClick={handleApplyAI} style={{ padding: '8px 12px', fontSize: '12px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px', marginRight: '4px' }}>auto_fix_high</span> Appliquer recommandation IA
+              </button>
             </div>
-            <div className="field">
-              <div className="field__label">Stock actuel</div>
-              <div className="field__input" style={{ background: 'transparent', boxShadow: 'none', paddingLeft: 0, color: 'var(--color-accent-green)' }}>
-                {editingItem.actuel}
-              </div>
-            </div>
+
             <FormRow>
-              <Field id="min" label="Seuil minimum" type="number" placeholder="0" value={formData.min} onChange={(e) => setFormData({...formData, min: e.target.value})} />
-              <Field id="max" label="Seuil maximum" type="number" placeholder="0" value={formData.max} onChange={(e) => setFormData({...formData, max: e.target.value})} />
+              <Field id="min" label="Seuil minimum (Alerte)" type="number" value={formData.min} onChange={(e) => setFormData({...formData, min: e.target.value})} />
+              <Field id="max" label="Seuil maximum (Surstock)" type="number" value={formData.max} onChange={(e) => setFormData({...formData, max: e.target.value})} />
             </FormRow>
           </div>
         )}
